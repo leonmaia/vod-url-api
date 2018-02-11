@@ -2,6 +2,8 @@ package main
 
 import (
 	"database/sql"
+	"flag"
+	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -11,6 +13,14 @@ import (
 
 	"github.com/leonmaia/vod-api/api"
 	"github.com/leonmaia/vod-api/persistence"
+)
+
+var (
+	dbName     = flag.String("database", "transmissions", "database name")
+	dbUser     = flag.String("username", "root", "database user name")
+	dbPassword = flag.String("password", "root", "database password")
+
+	httpPort = flag.String("http", "8000", "http port")
 )
 
 func createRoutes(tHandler *api.TransmissionHandler) *mux.Router {
@@ -23,7 +33,7 @@ func createRoutes(tHandler *api.TransmissionHandler) *mux.Router {
 }
 
 func main() {
-	db, err := sql.Open("mysql", "root:root@/transmissions")
+	db, err := sql.Open("mysql", fmt.Sprintf("%s:%s@/%s", *dbUser, *dbPassword, *dbName))
 	if err != nil {
 		panic(err.Error())
 	}
@@ -36,7 +46,7 @@ func main() {
 
 	srv := &http.Server{
 		Handler:      r,
-		Addr:         "127.0.0.1:8000",
+		Addr:         fmt.Sprintf("127.0.0.1:%s", *httpPort),
 		WriteTimeout: 10 * time.Second,
 		ReadTimeout:  10 * time.Second,
 	}
